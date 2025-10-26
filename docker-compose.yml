@@ -3,10 +3,10 @@ version: '3.9'
 services:
   db:
     image: postgres:16
-    container_name: myservice-postgres
+    container_name: grades_db
     environment:
-      POSTGRES_DB: notes_db
-      POSTGRES_USER: notes_db
-      POSTGRES_PASSWORD: notes_db
+      POSTGRES_DB: grades_db
+      POSTGRES_USER: grades_db
+      POSTGRES_PASSWORD: grades_db
     ports:
       - "5430:5432"

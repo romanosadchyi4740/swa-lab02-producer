@@ -9,9 +9,9 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
 
   datasource:
-    url: jdbc:postgresql://localhost:5430/notes_db
-    username: ${DB_USERNAME:notes_db}
-    password: ${DB_PASSWORD:notes_db}
+    url: jdbc:postgresql://localhost:5430/grades_db
+    username: ${DB_USERNAME:grades_db}
+    password: ${DB_PASSWORD:grades_db}
     driver-class-name: org.postgresql.Driver
 
   jpa:
