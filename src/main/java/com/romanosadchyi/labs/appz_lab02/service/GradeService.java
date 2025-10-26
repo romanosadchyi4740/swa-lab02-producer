@@ -37,11 +37,14 @@ public class GradeService {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    @Value("${rabbitmq.log-queue}")
-    private String logQueue;
+    @Value("${rabbitmq.exchange.name}")
+    private String exchangeName;
 
-    @Value("${rabbitmq.notification-queue}")
-    private String notificationQueue;
+    @Value("${rabbitmq.routing-key.log}")
+    private String routingKeyLog;
+
+    @Value("${rabbitmq.routing-key.notification}")
+    private String routingKeyNotification;
 
     public GradeDto createGrade(GradeCreateRequest request) {
         Student student = studentRepository.findById(request.getStudentId())
@@ -63,10 +66,10 @@ public class GradeService {
         try {
             String json = objectMapper.writeValueAsString(message);
             String logJson = objectMapper.writeValueAsString(
-                    new LogDto(String.format("Notification sent: %s", json), LocalDateTime.now()));
+                    new LogDto(String.format("New grade posted: %s", json), LocalDateTime.now()));
 
-            rabbitTemplate.convertAndSend(logQueue, logJson);
-            rabbitTemplate.convertAndSend(notificationQueue, json);
+            rabbitTemplate.convertAndSend(exchangeName, routingKeyLog, logJson);
+            rabbitTemplate.convertAndSend(exchangeName, routingKeyNotification, json);
         } catch (JsonProcessingException e) {
             log.error("Error converting grade to JSON: {}", e.getMessage());
             rabbitTemplate.convertAndSend("Error converting grade to JSON: " + e.getMessage());

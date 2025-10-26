@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: appz-lab02
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+  datasource:
+    url: jdbc:postgresql://localhost:5430/notes_db
+    username: ${DB_USERNAME:notes_db}
+    password: ${DB_PASSWORD:notes_db}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: true
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+rabbitmq:
+  exchange:
+    name: appz-exchange
+  queue:
+    log: log-queue
+    notification: notification-queue
+  routing-key:
+    log: log-routing-key
+    notification: notification-routing-key
