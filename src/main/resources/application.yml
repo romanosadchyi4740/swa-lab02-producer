@@ -18,6 +18,8 @@ spring:
     open-in-view: true
     show-sql: false
 
+server.port: 8081
+
 rabbitmq:
   exchange:
     name: appz-exchange
