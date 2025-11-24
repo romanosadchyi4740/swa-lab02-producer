@@ -1,5 +1,6 @@
 package com.romanosadchyi.labs.appz_lab02.service;
 
+import com.romanosadchyi.labs.appz_lab02.dto.TeacherDto;
 import com.romanosadchyi.labs.appz_lab02.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,22 @@ public class UserServiceClient {
         } catch (Exception e) {
             log.error("Error fetching user from user-service: {}", e.getMessage());
             throw new RuntimeException("Failed to fetch user from user-service", e);
+        }
+    }
+
+    public TeacherDto getTeacherById(Long id) {
+        try {
+            String url = userServiceUrl + "/api/users/teachers/" + id;
+
+            return restClient
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .body(TeacherDto.class);
+
+        } catch (Exception e) {
+            log.error("Error fetching teacher from user-service: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch teacher from user-service", e);
         }
     }
 }

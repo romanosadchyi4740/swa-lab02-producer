@@ -7,7 +7,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeCreateRequest;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeDto;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeMessage;
+import com.romanosadchyi.labs.appz_lab02.dto.GradeViewDto;
 import com.romanosadchyi.labs.appz_lab02.dto.LogDto;
+import com.romanosadchyi.labs.appz_lab02.dto.TeacherDto;
 import com.romanosadchyi.labs.appz_lab02.dto.UserDto;
 import com.romanosadchyi.labs.appz_lab02.model.Grade;
 import com.romanosadchyi.labs.appz_lab02.repository.GradeRepository;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -74,5 +77,43 @@ public class GradeService {
         }
 
         return gradeDto;
+    }
+
+    public List<GradeViewDto> getGradesByStudentId(Long studentId) {
+        List<Grade> grades = gradeRepository.findByStudentId(studentId);
+        return grades.stream()
+                .map(this::mapToGradeViewDto)
+                .toList();
+    }
+
+    public List<GradeViewDto> getGradesByParentId(Long parentId) {
+        List<Grade> grades = gradeRepository.findByParentId(parentId);
+        return grades.stream()
+                .map(this::mapToGradeViewDto)
+                .toList();
+    }
+
+    private GradeViewDto mapToGradeViewDto(Grade grade) {
+        GradeViewDto dto = new GradeViewDto();
+        dto.setId(grade.getId());
+        dto.setValue(grade.getValue());
+        dto.setStudentId(grade.getStudentId());
+        dto.setTeacherId(grade.getTeacherId());
+
+        try {
+            UserDto student = userServiceClient.getUserById(grade.getStudentId());
+            dto.setStudentName(student.getFirstName() + " " + student.getLastName());
+
+            TeacherDto teacher = userServiceClient.getTeacherById(grade.getTeacherId());
+            dto.setTeacherName(teacher.getFirstName() + " " + teacher.getLastName());
+            dto.setSubject(teacher.getSubject());
+        } catch (Exception e) {
+            log.error("Error fetching user details for grade {}: {}", grade.getId(), e.getMessage());
+            dto.setStudentName("Unknown");
+            dto.setTeacherName("Unknown");
+            dto.setSubject("Unknown");
+        }
+
+        return dto;
     }
 }
