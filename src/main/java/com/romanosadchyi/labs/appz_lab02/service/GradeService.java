@@ -93,12 +93,21 @@ public class GradeService {
                 .toList();
     }
 
+    public List<GradeViewDto> getGradesByStudentIdAndSubject(Long studentId, String subject) {
+        List<Grade> grades = gradeRepository.findByStudentId(studentId);
+        return grades.stream()
+                .map(this::mapToGradeViewDto)
+                .filter(grade -> grade.getSubject().equals(subject))
+                .toList();
+    }
+
     private GradeViewDto mapToGradeViewDto(Grade grade) {
         GradeViewDto dto = new GradeViewDto();
         dto.setId(grade.getId());
         dto.setValue(grade.getValue());
         dto.setStudentId(grade.getStudentId());
         dto.setTeacherId(grade.getTeacherId());
+        dto.setCreatedAt(grade.getCreatedAt());
 
         try {
             UserDto student = userServiceClient.getUserById(grade.getStudentId());

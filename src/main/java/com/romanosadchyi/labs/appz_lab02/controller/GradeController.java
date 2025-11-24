@@ -38,4 +38,11 @@ public class GradeController {
     public ResponseEntity<List<GradeViewDto>> getGradesByParentId(@PathVariable Long parentId) {
         return ResponseEntity.ok(gradeService.getGradesByParentId(parentId));
     }
+
+    @GetMapping("/student/{studentId}/subject/{subject}")
+    public ResponseEntity<List<GradeViewDto>> getGradesByStudentIdAndSubject(
+            @PathVariable Long studentId,
+            @PathVariable String subject) {
+        return ResponseEntity.ok(gradeService.getGradesByStudentIdAndSubject(studentId, subject));
+    }
 }
