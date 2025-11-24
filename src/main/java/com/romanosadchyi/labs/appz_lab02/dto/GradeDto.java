@@ -11,13 +11,17 @@ import lombok.NoArgsConstructor;
 public class GradeDto {
     private Long id;
     private Double value;
-    private String studentName;
-    private String teacherName;
+    private Long studentId;
+    private Long teacherId;
+    private Long parentId;
 
     public static GradeDto gradeToDto(Grade grade) {
-        return new GradeDto(grade.getId(),
+        return new GradeDto(
+                grade.getId(),
                 grade.getValue(),
-                grade.getStudent().getFirstName(),
-                grade.getTeacher().getFirstName());
+                grade.getStudentId(),
+                grade.getTeacherId(),
+                grade.getParentId()
+        );
     }
 }

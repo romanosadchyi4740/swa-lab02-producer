@@ -17,11 +17,12 @@ public class Grade {
 
     private Double value;
 
-    @ManyToOne
-    @JoinColumn(name = "student_id")
-    private Student student;
+    @Column(name = "student_id")
+    private Long studentId;
 
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private Teacher teacher;
+    @Column(name = "teacher_id")
+    private Long teacherId;
+
+    @Column(name = "parent_id")
+    private Long parentId;
 }

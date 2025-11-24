@@ -8,12 +8,9 @@ import com.romanosadchyi.labs.appz_lab02.dto.GradeCreateRequest;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeDto;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeMessage;
 import com.romanosadchyi.labs.appz_lab02.dto.LogDto;
+import com.romanosadchyi.labs.appz_lab02.dto.UserDto;
 import com.romanosadchyi.labs.appz_lab02.model.Grade;
-import com.romanosadchyi.labs.appz_lab02.model.Student;
-import com.romanosadchyi.labs.appz_lab02.model.Teacher;
 import com.romanosadchyi.labs.appz_lab02.repository.GradeRepository;
-import com.romanosadchyi.labs.appz_lab02.repository.StudentRepository;
-import com.romanosadchyi.labs.appz_lab02.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -27,8 +24,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class GradeService {
     private final GradeRepository gradeRepository;
-    private final StudentRepository studentRepository;
-    private final TeacherRepository teacherRepository;
+    private final UserServiceClient userServiceClient;
     private final RabbitTemplate rabbitTemplate;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -47,20 +43,22 @@ public class GradeService {
     private String routingKeyNotification;
 
     public GradeDto createGrade(GradeCreateRequest request) {
-        Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        Teacher teacher = teacherRepository.findById(request.getTeacherId())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        // Validate that parent exists by fetching from user-service
+        UserDto parent = userServiceClient.getUserById(request.getParentId());
+        if (parent == null) {
+            throw new RuntimeException("Parent not found");
+        }
 
         Grade grade = new Grade();
-        grade.setStudent(student);
-        grade.setTeacher(teacher);
+        grade.setStudentId(request.getStudentId());
+        grade.setTeacherId(request.getTeacherId());
+        grade.setParentId(request.getParentId());
         grade.setValue(request.getValue());
 
         Grade savedGrade = gradeRepository.save(grade);
         GradeDto gradeDto = GradeDto.gradeToDto(savedGrade);
 
-        String parentEmail = student.getParent().getEmail();
+        String parentEmail = parent.getEmail();
         GradeMessage message = new GradeMessage(gradeDto, parentEmail);
 
         try {
@@ -72,7 +70,6 @@ public class GradeService {
             rabbitTemplate.convertAndSend(exchangeName, routingKeyNotification, json);
         } catch (JsonProcessingException e) {
             log.error("Error converting grade to JSON: {}", e.getMessage());
-            rabbitTemplate.convertAndSend("Error converting grade to JSON: " + e.getMessage());
             throw new RuntimeException(e);
         }
 
