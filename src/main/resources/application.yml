@@ -29,3 +29,21 @@ rabbitmq:
   routing-key:
     log: log-routing-key
     notification: notification-routing-key
+
+management:
+  tracing:
+    enabled: ${TRACING_ENABLED:true}
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+      timeout: 1s
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
