@@ -66,7 +66,7 @@ public class GradeService {
         GradeMessage message = new GradeMessage();
         message.setGrade(gradeDto);
         message.setParentEmail(parentEmail);
-        message.setFromRest(false); // RabbitMQ message, not from REST
+        message.setFromRest(false);
 
         try {
             String json = objectMapper.writeValueAsString(message);
@@ -75,18 +75,16 @@ public class GradeService {
 
             rabbitTemplate.convertAndSend(exchangeName, routingKeyLog, logJson);
             
-            long rabbitMqStartTime = System.currentTimeMillis();
-            log.info("RabbitMQ notification sent at: {} ms", rabbitMqStartTime);
             rabbitTemplate.convertAndSend(exchangeName, routingKeyNotification, json);
+            log.info("RabbitMQ notification sent at: {} ms", System.currentTimeMillis());
 
             GradeMessage restMessage = new GradeMessage();
             restMessage.setGrade(gradeDto);
             restMessage.setParentEmail(parentEmail);
             restMessage.setFromRest(true);
             
-            long restStartTime = System.currentTimeMillis();
-            log.info("REST notification sent at: {} ms", restStartTime);
             notificationServiceClient.sendNotificationViaRest(restMessage);
+            log.info("REST notification sent at: {} ms", System.currentTimeMillis());
         } catch (JsonProcessingException e) {
             log.error("Error converting grade to JSON: {}", e.getMessage());
             throw new RuntimeException(e);
