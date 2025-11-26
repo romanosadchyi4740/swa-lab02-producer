@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class GradeMessage {
     private GradeDto grade;
     private String parentEmail;
+    private Boolean fromRest = false;
 }

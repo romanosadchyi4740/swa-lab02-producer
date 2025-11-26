@@ -29,6 +29,7 @@ public class GradeService {
     private final GradeRepository gradeRepository;
     private final UserServiceClient userServiceClient;
     private final RabbitTemplate rabbitTemplate;
+    private final NotificationServiceClient notificationServiceClient;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
@@ -62,7 +63,10 @@ public class GradeService {
         GradeDto gradeDto = GradeDto.gradeToDto(savedGrade);
 
         String parentEmail = parent.getEmail();
-        GradeMessage message = new GradeMessage(gradeDto, parentEmail);
+        GradeMessage message = new GradeMessage();
+        message.setGrade(gradeDto);
+        message.setParentEmail(parentEmail);
+        message.setFromRest(false); // RabbitMQ message, not from REST
 
         try {
             String json = objectMapper.writeValueAsString(message);
@@ -70,10 +74,24 @@ public class GradeService {
                     new LogDto(String.format("New grade posted: %s", json), LocalDateTime.now()));
 
             rabbitTemplate.convertAndSend(exchangeName, routingKeyLog, logJson);
+            
+            long rabbitMqStartTime = System.currentTimeMillis();
+            log.info("RabbitMQ notification sent at: {} ms", rabbitMqStartTime);
             rabbitTemplate.convertAndSend(exchangeName, routingKeyNotification, json);
+
+            GradeMessage restMessage = new GradeMessage();
+            restMessage.setGrade(gradeDto);
+            restMessage.setParentEmail(parentEmail);
+            restMessage.setFromRest(true);
+            
+            long restStartTime = System.currentTimeMillis();
+            log.info("REST notification sent at: {} ms", restStartTime);
+            notificationServiceClient.sendNotificationViaRest(restMessage);
         } catch (JsonProcessingException e) {
             log.error("Error converting grade to JSON: {}", e.getMessage());
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.error("Error sending notification: {}", e.getMessage());
         }
 
         return gradeDto;
