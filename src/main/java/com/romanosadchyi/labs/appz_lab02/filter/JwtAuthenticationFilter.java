@@ -19,7 +19,6 @@ import java.util.Collections;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
     private final JwtService jwtService;
 
     @Override
@@ -27,16 +26,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
+        String token;
+        String username;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             try {
-                // Validate token
                 jwtService.validateToken(token);
                 
-                // Extract user information
                 username = jwtService.extractUsername(token);
                 String role = jwtService.extractRole(token);
 
@@ -50,7 +47,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (Exception e) {
-                // Token validation failed - request will be rejected by security filter chain
                 logger.debug("JWT validation failed: " + e.getMessage());
             }
         }

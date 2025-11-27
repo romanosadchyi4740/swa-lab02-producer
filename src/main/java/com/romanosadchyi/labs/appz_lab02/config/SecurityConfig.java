@@ -23,9 +23,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(httpConf ->
                         httpConf
-                                // Allow health check endpoints without authentication
                                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                                // Require authentication for all other endpoints
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

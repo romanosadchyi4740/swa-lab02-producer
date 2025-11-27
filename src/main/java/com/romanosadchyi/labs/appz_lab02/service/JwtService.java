@@ -10,11 +10,9 @@ import javax.crypto.SecretKey;
 
 @Service
 public class JwtService {
-    // MUST match the secret in User Service and API Gateway
     public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
     public void validateToken(final String token) {
-        // This will throw an exception if the token is expired or invalid
         Jwts.parser()
                 .verifyWith(getSignKey())
                 .build()
@@ -30,11 +28,6 @@ public class JwtService {
     public String extractRole(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("role", String.class);
-    }
-
-    public Long extractUserId(String token) {
-        Claims claims = extractAllClaims(token);
-        return claims.get("userId", Long.class);
     }
 
     private Claims extractAllClaims(String token) {

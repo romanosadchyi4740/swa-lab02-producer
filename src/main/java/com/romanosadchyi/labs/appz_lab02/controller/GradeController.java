@@ -7,6 +7,7 @@ import com.romanosadchyi.labs.appz_lab02.service.GradeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ public class GradeController {
     private final GradeService gradeService;
 
     @PostMapping
+    @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<GradeDto> createGrade(@RequestBody GradeCreateRequest request) {
         GradeDto grade = gradeService.createGrade(request);
         return ResponseEntity.ok(grade);
