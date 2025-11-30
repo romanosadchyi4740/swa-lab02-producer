@@ -1,9 +1,5 @@
 package com.romanosadchyi.labs.appz_lab02.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeCreateRequest;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeDto;
 import com.romanosadchyi.labs.appz_lab02.dto.GradeMessage;
@@ -19,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 
@@ -30,12 +28,7 @@ public class GradeService {
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
     private final RabbitTemplate rabbitTemplate;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    static {
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
+    private final ObjectMapper objectMapper;
 
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
@@ -70,7 +63,7 @@ public class GradeService {
 
             rabbitTemplate.convertAndSend(exchangeName, routingKeyLog, logJson);
             rabbitTemplate.convertAndSend(exchangeName, routingKeyNotification, json);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Error converting grade to JSON: {}", e.getMessage());
             rabbitTemplate.convertAndSend("Error converting grade to JSON: " + e.getMessage());
             throw new RuntimeException(e);
